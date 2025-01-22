@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->string('nama');
             $table->string('username')->unique();
             $table->string('password');
+            $table->string('levels')->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
             $table->softDeletes()->index();

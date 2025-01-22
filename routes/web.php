@@ -1,17 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Auth\Middleware\Authenticate;
-
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Management\DashboardController as MgtDashboardController;
-use App\Http\Controllers\Management\UserController as MgtUserController;
+use App\Http\Controllers\ClassTeacher\DashboardController as CtDashboardController;
+use App\Http\Controllers\TeacherOnDuty\DashboardController as ToDashboardController;
 
 /*
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Web Routes
-|---------------------------------------------------------------------------
+|--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
 | routes are loaded by the RouteServiceProvider and all of them will
@@ -19,31 +17,44 @@ use App\Http\Controllers\Management\UserController as MgtUserController;
 |
 */
 
-// Route untuk login dan logout
-Route::get('', [AuthController::class, 'index']);
+// Halaman login dan logout
 Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('login', [AuthController::class, 'login'])->name('login.process');
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
-// Route untuk management
-Route::name('mgt.')->prefix('managements')->group(function() {
-    Route::controller(MgtDashboardController::class)->prefix('dashboard')->name('dashboard.')->group(function () {
-        Route::get('/', 'index')->name('index');
+// Middleware untuk pengguna yang sudah login
+Route::middleware('auth')->group(function () {
+    // Redirect berdasarkan level pengguna
+    Route::get('/dashboard-redirect', function () {
+        $levels = explode(',', auth()->user()->levels);
+        switch ($levels[0]) {
+            case 'admin':
+                return redirect()->route('mgt.dashboard.index');
+            case 'class-teachers':
+                return redirect()->route('ct.dashboard.index');
+            case 'teach-onduty':
+                return redirect()->route('to.dashboard.index');
+            default:
+                return redirect()->route('login')->with('error', 'Level pengguna tidak dikenali.');
+        }
+    })->name('dashboard.index');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
+    });
+    
+    // Dashboard admin
+    Route::name('mgt.')->prefix('managements')->group(function () {
+        Route::get('dashboard', [MgtDashboardController::class, 'index'])->name('dashboard.index');
     });
 
-    Route::controller(MgtUserController::class)->prefix('users')->name('user.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::get('/create', 'create')->name('create');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
-        Route::put('/{id}/activate', 'activate')->name('activate');
-        Route::put('/{id}/inactivate', 'inactivate')->name('inactivate');
-        Route::delete('/{id}', 'remove')->name('remove');
+    // Dashboard wali kelas
+    Route::name('ct.')->prefix('class-teachers')->group(function () {
+        Route::get('dashboard', [CtDashboardController::class, 'index'])->name('dashboard.index');
     });
-});
 
-Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
-    Route::get('/', 'index')->name('index');
-    Route::put('/', 'update')->name('update');
+    // Dashboard guru piket
+    Route::name('to.')->prefix('teacher-onduty')->group(function () {
+        Route::get('dashboard', [ToDashboardController::class, 'index'])->name('dashboard.index');
+    });
 });

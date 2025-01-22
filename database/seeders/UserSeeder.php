@@ -16,15 +16,17 @@ class UserSeeder extends Seeder
     {
         User::insert([
             [
-                'name' => 'admin',
+                'nama' => 'admin',
                 'username' => 'admin',
                 'password' => bcrypt('admin'),
+                'levels' => 'admin',
                 'is_active' => true,
             ],
             [
-                'name' => 'gurupiket',
+                'nama' => 'gurupiket',
                 'username' => 'gurupiket',
                 'password' => bcrypt('gurupiket'),
+                'levels' => 'guru',
                 'is_active' => true,
             ],
         ]);

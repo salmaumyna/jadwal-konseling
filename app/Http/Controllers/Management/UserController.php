@@ -67,12 +67,13 @@ class UserController extends Controller
             return back()->withInput()->withError('Username telah digunakan oleh akun lain!');
         }
 
-        $user = User::create([
-            'name'      => $request->name,
-            'username'  => $request->username,
-            'password'  => bcrypt($request->password),
-            'is_active' => true,
+        User::create([
+            'nama' => 'admin',
+            'username' => 'admin',
+            'password' => bcrypt('password'),
+            'levels' => 'admin', 
         ]);
+        
 
         return redirect()->route('mgt.user.index')->withSuccess('Pengguna berhasil ditambahkan!');
     }
